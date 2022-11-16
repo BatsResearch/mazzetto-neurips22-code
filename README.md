@@ -1,6 +1,6 @@
 # Tight Lower Bounds on Worst-Case Guarantees for Zero-Shot Learning with Attributes
 
-In this folder you can find the code to reproduce the experiments of the paper __"Tight Lower Bounds on Worst-Case Guarantees for Zero-Shot Learning with Attributes"__ publiced in the proceedings of NeurIPS 2022. 
+In this folder you can find the code to reproduce the experiments of the paper __"Tight Lower Bounds on Worst-Case Guarantees for Zero-Shot Learning with Attributes"__ published in the proceedings of NeurIPS 2022. 
 
 Read our paper [here](https://arxiv.org/pdf/2205.13068.pdf).
 
