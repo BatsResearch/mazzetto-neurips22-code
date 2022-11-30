@@ -1,15 +1,32 @@
+import os
+import sys
+from pathlib import Path
 import pickle
+import argparse
 import scipy.io
 import numpy as np
 from scipy import io
 from collections import Counter
 
+from sklearn.metrics import confusion_matrix, accuracy_score, \
+                            balanced_accuracy_score
+# directory reach
+directory = Path(os.path.abspath(__file__))
+# setting path
+sys.path.append(os.path.abspath(directory.parent.parent.parent))
 from src.helper import read_dataset, \
                        load_class_attribute_matrix, \
                        load_classes
 from src.datasets import aPY, AwA, LAD, SUN, CUB
-from sklearn.metrics import confusion_matrix, accuracy_score, \
-                            balanced_accuracy_score
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-data', required=True, help='choose between APY, AWA2, AWA1, CUB, SUN, LAD', type = str)
+parser.add_argument('-method', required=True, help='trainval, val, test', type = str)
+parser.add_argument('-reduced', help='yes to reduce the number of classes, no otherwise', type = str, default='no')
+parser.add_argument('-num_subset', help='number of the group of subclasses', type = str, default='all')
+parser.add_argument('-num_att', help='number of attributes', type = int, default=15)
+args = parser.parse_args()
 
 def predict(X, M,
             p_attr, p_class=None):
@@ -30,7 +47,7 @@ def predict(X, M,
 
 
 data = 'data/'
-dataset = 'CUB/'
+dataset = args.data + '/'
 iterations = 1
 
 ds = read_dataset(dataset, data)
@@ -49,7 +66,7 @@ else:
 seen_samples, seen_old_to_new, seen_new_to_old = ds.get_seen_sample()
 unseen_samples, unseen_old_to_new, unseen_new_to_old = ds.get_unseen_sample()
 
-if dataset == 'AwA2/':
+if dataset == 'AWA2/':
     class_attributes = ds.get_class_attribute_matrix('att_splits.mat',
                                                      continuous=True, 
                                                      bound=None, 
@@ -63,8 +80,7 @@ else:
 embeddings = ds.get_embeddings()
 
 
-data_folder = 'models/xlsa17/data/' + dataset
-
+data_folder = 'data/' + dataset
 
 split_file = 'att_splits.mat'
 splits = scipy.io.loadmat(f'{data}{dataset}splits/{split_file}')
@@ -94,10 +110,10 @@ test_classes = np.unique(np.squeeze([i[0][0] \
 
 models = pickle.load(open(f"results/{dataset}detectors/models_held_out.pickle", "rb" ) )
 
-method = 'test'
-n_attr = 15
-reduced = 'no'
-num_subset = 5
+method = args.method
+n_attr = args.num_att
+reduced = args.reduced
+num_subset = args.num_subset
 
 res101 = io.loadmat(data_folder + 'res101.mat')
 att_splits = io.loadmat(data_folder + 'att_splits.mat')
@@ -255,6 +271,6 @@ for att in range(1, n_attr+1):
     print(balanced_accuracy_score(y_true, real_y_pred))
     test_acc = balanced_accuracy_score(y_true, real_y_pred)
     
-#     with open(f'models/DAP/confusion_matrix/accuracy_{dataset[:-1].upper()}_method_{method}.txt', 'a') as f:
-#         f.write(f'{dataset[:-1].upper()}\t{method}\t{att}\t{test_acc}\t{reduced}\t{num_subset}\n')
+    with open(f'results/{dataset[:-1].upper()}/DAP/confusion_matrix/accuracy_{dataset[:-1].upper()}_method_{method}.txt', 'a') as f:
+        f.write(f'{dataset[:-1].upper()}\t{method}\t{att}\t{test_acc}\t{reduced}\t{num_subset}\n')
     

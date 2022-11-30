@@ -19,7 +19,7 @@ parser.add_argument('-gamma', '--gamma', default=0, type=int)
 parser.add_argument('-att', '--att', default=1, type=int)
 parser.add_argument('-method', '--method',  type=str)
 parser.add_argument('-reduced', help='yes to reduce the number of classes, no otherwise', type = str, default='no')
-parser.add_argument('-num_subset', help='number of the group of subclasses', type = str, default='nan')
+parser.add_argument('-num_subset', help='number of the group of subclasses', type = str, default='all')
 #parser.add_argument('-unseen',  help='seen (no) unseen (yes)', type=str)
 
 """
@@ -40,7 +40,7 @@ class ESZSL():
 	
 	def __init__(self):
 
-		self.data_folder = '../xlsa17/data/' + args.dataset+'/'
+		self.data_folder = 'data/' + args.dataset+'/'
 		
 		attributes = []
 		if args.method == 'trainval':
@@ -219,16 +219,15 @@ class ESZSL():
 		
 		#test_acc, _, cm_save = self.zsl_acc(self.X_test, best_W, self.labels_test, self.test_sig)
 		if args.reduced == 'no':
-			with open(f'confusion_matrix/{args.dataset}_method_{args.method}_n_att_{args.att}_cm.pickle', 'wb') as handle:
+			with open(f'results/{args.dataset}/ESZSL/confusion_matrix/{args.dataset}_method_{args.method}_n_att_{args.att}_cm.pickle', 'wb') as handle:
 				pickle.dump(cm_save, handle, protocol=pickle.HIGHEST_PROTOCOL)
 		elif args.reduced == 'yes':
-			with open(f'confusion_matrix/reduced_{args.dataset}_method_{args.method}_n_att_{args.att}_sub_{args.num_subset}_cm.pickle', 'wb') as handle:
+			with open(f'results/{args.dataset}/ESZSL/confusion_matrix/reduced_{args.dataset}_method_{args.method}_n_att_{args.att}_sub_{args.num_subset}_cm.pickle', 'wb') as handle:
 				pickle.dump(cm_save, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-		with open(f'confusion_matrix/accuracy_{args.dataset}_method_{args.method}.txt', 'a') as f:
+		with open(f'results/{args.dataset}/ESZSL/confusion_matrix/accuracy_{args.dataset}_method_{args.method}.txt', 'a') as f:
 			f.write(f'{args.dataset}\t{args.method}\t{args.att}\t{test_acc}\t{args.reduced}\t{args.num_subset}\n')
 		
-		#print(np.unique(self.labels_val), np.unique(self.labels_train))
 		print('Test Acc:{}'.format(test_acc))
 		print(args.method)
 
@@ -243,3 +242,5 @@ if __name__ == '__main__':
 		args.alpha, args.gamma = clf.fit()
 	
 	clf.evaluate(args.alpha, args.gamma)
+
+

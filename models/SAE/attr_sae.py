@@ -2,7 +2,7 @@
 This code is a slightly adapted version of the ALE implementation at https://github.com/mvp18/Popular-ZSL-Algorithms.
 
 The difference is in the class initialization, and in the evaluate function modified the metrics of interest.
-"""
+""" 
 
 
 import pickle
@@ -20,7 +20,7 @@ parser.add_argument('-ld2', '--ld2', default=5, help='best value for S-->F durin
 parser.add_argument('-att', '--att', default=1, type=int)
 parser.add_argument('-method', '--method',  type=str)
 parser.add_argument('-reduced', help='yes to reduce the number of classes, no otherwise', type = str, default='no')
-parser.add_argument('-num_subset', help='number of the group of subclasses', type = str, default='nan')
+parser.add_argument('-num_subset', help='number of the group of subclasses', type = str, default='all')
 
 
 
@@ -47,7 +47,7 @@ class SAE():
     def __init__(self, args):
 
         self.args = args
-        data_folder = '../xlsa17/data/' + args.dataset+'/'
+        data_folder = 'data/' + args.dataset+'/'
         self.data_folder = data_folder
         
         attributes = []
@@ -257,7 +257,7 @@ class SAE():
             acc_F2S = sum(cm_F2S.diagonal())/sig.shape[1]
             acc_S2F = sum(cm_S2F.diagonal())/sig.shape[1]
 
-            # acc = acc_F2S if acc_F2S>acc_S2F else acc_S2F
+            # acc = acc_F2S if acc_F2S>acc_S2F else acc_S2F 
 
             return acc_F2S, acc_S2F, save_F2S, save_S2F
 
@@ -289,24 +289,24 @@ class SAE():
 
 
         if args.reduced == 'no':
-            with open(f'confusion_matrix/{args.dataset}_method_{args.method}_n_att_{args.att}_cm_F2S.pickle', 'wb') as handle:
+            with open(f'results/{args.dataset}/SAE/confusion_matrix/{args.dataset}_method_{args.method}_n_att_{args.att}_cm_F2S.pickle', 'wb') as handle:
                 pickle.dump(cm_F2S, handle, protocol=pickle.HIGHEST_PROTOCOL)
         elif args.reduced == 'yes':
-            with open(f'confusion_matrix/reduced_{args.dataset}_method_{args.method}_n_att_{args.att}_sub_{args.num_subset}_cm_F2S.pickle', 'wb') as handle:
+            with open(f'results/{args.dataset}/SAE/confusion_matrix/reduced_{args.dataset}_method_{args.method}_n_att_{args.att}_sub_{args.num_subset}_cm_F2S.pickle', 'wb') as handle:
                 pickle.dump(cm_F2S, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         if args.reduced == 'no':
-            with open(f'confusion_matrix/{args.dataset}_method_{args.method}_n_att_{args.att}_cm_S2F.pickle', 'wb') as handle:
+            with open(f'results/{args.dataset}/SAE/confusion_matrix/{args.dataset}_method_{args.method}_n_att_{args.att}_cm_S2F.pickle', 'wb') as handle:
                 pickle.dump(cm_S2F, handle, protocol=pickle.HIGHEST_PROTOCOL)
         elif args.reduced == 'yes':
-            with open(f'confusion_matrix/reduced_{args.dataset}_method_{args.method}_n_att_{args.att}_sub_{args.num_subset}_cm_S2F.pickle', 'wb') as handle:
+            with open(f'results/{args.dataset}/SAE/confusion_matrix/reduced_{args.dataset}_method_{args.method}_n_att_{args.att}_sub_{args.num_subset}_cm_S2F.pickle', 'wb') as handle:
                 pickle.dump(cm_S2F, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
         print('Test Acc --> [F-->S]:{} [S-->F]:{}'.format(test_acc_F2S, test_acc_S2F))
 
 
-        with open(f'confusion_matrix/accuracy_{args.dataset}_method_{args.method}.txt', 'a') as f:
+        with open(f'results/{args.dataset}/SAE/confusion_matrix/accuracy_{args.dataset}_method_{args.method}.txt', 'a') as f:
             f.write(f'{args.dataset}\t{args.method}\t{args.att}\t{test_acc_F2S}\t{test_acc_S2F}\t{args.reduced}\t{args.num_subset}\n')
 		
         

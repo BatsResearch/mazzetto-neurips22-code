@@ -26,6 +26,9 @@ parser.add_argument('-seed', '--rand_seed', default=42, type=int)
 parser.add_argument('-mode', default='hyper', help='type hyper if searching final if using fixed params', type=str)
 parser.add_argument('-att', '--att', default=1, type=int)
 parser.add_argument('-method', '--method',  type=str)
+parser.add_argument('-reduced', help='yes to reduce the number of classes, no otherwise', type = str, default='no')
+parser.add_argument('-num_subset', help='number of the group of subclasses', type = str, default='all')
+
 
 """
 Best Values of (norm, lr, margin) found by validation & corr. test accuracies:
@@ -47,21 +50,30 @@ class SJE():
         random.seed(self.args.rand_seed)
         np.random.seed(self.args.rand_seed)
 
-        data_folder = '../xlsa17/data/' + args.dataset+'/'
+        data_folder = 'data/' + args.dataset+'/'
         self.data_folder = data_folder
         
         attributes = []
         if args.method == 'trainval':
-            
-            with open(f'{self.data_folder}/trainval_greedy.txt', 'r') as f:
-                for a in f:
-                    attributes += [int(a.strip())]
+            if args.reduced == 'no':
+                with open(f'{self.data_folder}trainval_greedy.txt', 'r') as f:
+                    for a in f:
+                        attributes += [int(a.strip())]
+            elif args.reduced == 'yes':
+                with open(f'{self.data_folder}reduced_trainval_greedy_sub_{args.num_subset}.txt', 'r') as f:
+                    for a in f:
+                        attributes += [int(a.strip())]
+                what_classes = []
+                with open(f'{self.data_folder}subset_{args.num_subset}.txt', 'r') as f:
+                    for a in f:
+                        what_classes += [int(a.strip())+1]
+
+                print(f"NUM REDUCED CLASSES: {len(what_classes)}")
 
         elif args.method == 'val':
             with open(f'{self.data_folder}/val_greedy.txt', 'r') as f:
                 for a in f:
                     attributes += [int(a.strip())]
-        
         elif args.method == 'test':
             with open(f'{self.data_folder}/test_greedy.txt', 'r') as f:
                 for a in f:
@@ -230,8 +242,6 @@ class SJE():
 
         print('Testing...\n')
 
-        
-
         if args.method == 'trainval':
             test_acc, cm_save = self.zsl_acc(self.X_train, best_W, self.labels_train, self.train_sig)
 
@@ -242,10 +252,10 @@ class SJE():
             test_acc, cm_save = self.zsl_acc(self.X_test, best_W, self.labels_test, self.test_sig)
 
         #test_acc, _, cm_save = self.zsl_acc(self.X_test, best_W, self.labels_test, self.test_sig)
-        with open(f'confusion_matrix/{args.dataset}_method_{args.method}_n_att_{args.att}_cm_seed_{self.args.rand_seed}.pickle', 'wb') as handle:
+        with open(f'results/{args.dataset}/SJE/confusion_matrix/{args.dataset}_method_{args.method}_n_att_{args.att}_cm_seed_{self.args.rand_seed}.pickle', 'wb') as handle:
             pickle.dump(cm_save, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        with open(f'confusion_matrix/accuracy_{args.dataset}_method_{args.method}.txt', 'a') as f:
+        with open(f'results/{args.dataset}/SJE/confusion_matrix/accuracy_{args.dataset}_method_{args.method}.txt', 'a') as f:
             f.write(f'{args.dataset}\t{args.method}\t{args.att}\t{test_acc}\n')
 
         print('Test Acc:{}'.format(test_acc))
