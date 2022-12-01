@@ -153,6 +153,7 @@ dmypy.json
 cython_debug/
 
 # Data
+models/xlsa17/
 results/
 data/
 .DS_Store

@@ -96,6 +96,11 @@ In the remaining sections, we show how to run each model for the APY dataset. Th
 First we train the attribute detectors on the seen classes.
 
 ```
+python train_attribute_detectors.py -data APY
+```
+
+
+```
 python models/DAP/dap.py -data APY -method test -reduced no -num_subset all -num_att 15
 ```
 

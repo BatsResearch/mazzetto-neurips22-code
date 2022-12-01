@@ -31,106 +31,6 @@ def transform_image():
                 ])
 
 
-def train_data_loaders(class_idx, unseen_classes, seen_classes,
-                       seen_samples, unseen_samples,
-                      class_attributes, image_attr, embeddings,
-                       dataset,
-                      seed=1, n_iter=3, max_iter=500):
-    """Returns scores, num_examples, and saves and
-    returns list of models.
-    """
-    
-    
-    idx_unseen = sorted([class_idx[c] for c in unseen_classes])
-    idx_seen = sorted([class_idx[c] for c in seen_classes])
-
-    M = class_attributes[idx_seen]
-    M_test = class_attributes[idx_unseen]
-    
-    # Split attribute matrices
-    img_att_seen = image_attr[seen_samples]
-    img_att_unseen = image_attr[unseen_samples]
-    
-    # Split feature matrices
-    X_tmp = embeddings[seen_samples]
-    X_test = embeddings[unseen_samples]
-
-    # Initialize return
-    scores = defaultdict(list)
-    num_examples = {}
-    models = {}
-    C, A = np.shape(M)
-    
-    for i,a in enumerate(tqdm(range(A))):
-        
-        
-        # Get examples with the attribute
-        idx_attr = np.where(img_att_seen[:,a] > 0)[0]
-        idx_attr_test = np.where(img_att_unseen[:,a] > 0)[0]
-        
-        
-        # Assign o,1 labe to all the examples
-        y_tmp = np.array([1 if i in idx_attr else 0 \
-                      for i in range(X_tmp.shape[0])])
-        y_test = np.array([1 if i in idx_attr_test else 0 \
-                      for i in range(X_test.shape[0])])
-        
-        num_examples[a] = {"Num pos train":len(idx_attr),
-                           "Num pos test": len(idx_attr_test),
-                           "Num neg train": np.sum(y_tmp==0),
-                          "Num neg test": np.sum(y_test==0)}
-        
-        for s in range(n_iter):
-            # Train logistic models for different splits of train and validation
-            X_train, X_val, y_train, y_val = train_test_split(X_tmp, y_tmp, 
-                                                              test_size=0.33, 
-                                                              random_state=s)
-            
-            try:
-                clf = LogisticRegression(random_state=seed, 
-                                         max_iter=max_iter, 
-                                         class_weight='balanced'
-                                         ).fit(X_train, y_train)
-                
-                y_val_pred = clf.predict(X_val)
-                
-                valpoint = clf.score(X_val, y_val)
-                balanced_val = balanced_accuracy_score(y_val, y_val_pred)
-                #print('VAL: ', np.unique(y_val), np.unique(y_val_pred))
-                
-                y_test_pred = clf.predict(X_test)
-                testpoint = clf.score(X_test, y_test)
-                balanced_test = balanced_accuracy_score(y_test, y_test_pred)
-                #print('TEST: ', np.unique(y_test), np.unique(y_test_pred))
-            
-            except ValueError:
-                print('Not samples from the two classes -> Assign -100 to identify nan')
-                scores[a] += [(-100,-100, -100, -100)]
-                continue
-                
-            scores[a] += [(valpoint, balanced_val, 
-                           testpoint, balanced_test)]
-        
-        #print(a, scores[a])
-        
-        models[a] = clf
-          
-    with open(f'results/{dataset}detectors/score_detectors.pickle', 'wb') as handle:
-        pickle.dump(scores, 
-                    handle, protocol=pickle.HIGHEST_PROTOCOL)
-        
-    with open(f'results/{dataset}detectors/numers_examples_detectors.pickle', 'wb') as handle:
-        pickle.dump(num_examples, 
-                    handle, protocol=pickle.HIGHEST_PROTOCOL)
-        
-    with open(f'results/{dataset}detectors/models.pickle', 'wb') as handle:
-        pickle.dump(models, 
-                    handle, protocol=pickle.HIGHEST_PROTOCOL)
-            
-            
-    return scores, num_examples, models
-
-
 
 def compute_identifiability(ds, lbs, ubs, dataset):
      
@@ -309,3 +209,91 @@ def load_class_attribute_matrix(all_classes, unseen_classes, dataset_folder, met
     M = np.array(M)
     M = M[what,:]
     return M
+
+
+def train_data_loaders(class_idx, unseen_classes, seen_classes, 
+                       seen_samples, unseen_samples, 
+                       image_attr, embeddings, 
+                       dataset,
+                      seed=1, n_iter=3, max_iter=500):
+    """Returns scores, num_examples, and saves and
+    returns list of models.
+    """
+    
+    
+    idx_unseen = sorted(unseen_classes)
+    idx_seen = sorted(seen_classes)
+    
+    # Split attribute matrices
+    img_att_seen = image_attr[[i[0] for i in seen_samples-1]]
+    img_att_unseen = image_attr[[i[0] for i in unseen_samples-1]]
+    #img_att_val = image_attr[val_samples-1]
+    
+    # Split feature matrices
+    X_tmp = embeddings.numpy()[[i[0] for i in seen_samples-1]]
+    X_test = embeddings.numpy()[[i[0] for i in unseen_samples-1]]
+
+    # Initialize return
+    scores = defaultdict(list)
+    num_examples = {}
+    models = {}
+    C, A = np.shape(img_att_seen)
+    
+    for i,a in enumerate(tqdm(range(A))):
+        # Get examples with the attribute
+        print(img_att_seen.shape)
+        idx_attr = np.where(img_att_seen[:,a] > 0)[0]
+        idx_attr_test = np.where(img_att_unseen[:,a] > 0)[0]
+        
+        
+        # Assign o,1 labe to all the examples
+        y_tmp = np.array([1 if i in idx_attr else 0 \
+                      for i in range(X_tmp.shape[0])])
+        y_test = np.array([1 if i in idx_attr_test else 0 \
+                      for i in range(X_test.shape[0])])
+        
+        num_examples[a] = {"Num pos train":len(idx_attr),
+                           "Num pos test": len(idx_attr_test),
+                           "Num neg train": np.sum(y_tmp==0),
+                           "Num neg test": np.sum(y_test==0)}
+        
+        for s in range(n_iter):
+            # Train logistic models for different splits of train and validation
+            X_train, X_val, y_train, y_val = train_test_split(X_tmp, y_tmp, 
+                                                              test_size=0.33, 
+                                                              random_state=s)
+            
+            try:
+                clf = LogisticRegression(random_state=seed, 
+                                         max_iter=max_iter, 
+                                         class_weight='balanced'
+                                         ).fit(X_train, y_train)
+                
+                y_val_pred = clf.predict(X_val)
+                valpoint = clf.score(X_val, y_val)
+                balanced_val = balanced_accuracy_score(y_val, y_val_pred)
+                
+                y_test_pred = clf.predict(X_test)
+                testpoint = clf.score(X_test, y_test)
+                balanced_test = balanced_accuracy_score(y_test, y_test_pred)
+            
+            except ValueError:
+                print('Not samples from the two classes -> Assign -100 to identify nan')
+                scores[a] += [(-100,-100, -100, -100)]
+                continue
+                
+            scores[a] += [(valpoint, balanced_val, 
+                           testpoint, balanced_test)]
+        
+        models[a] = clf
+          
+    with open(f'results/{dataset}detectors/score_detectors_held_out.pickle', 'wb') as handle:
+        pickle.dump(scores, 
+                    handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+    with open(f'results/{dataset}detectors/models_held_out.pickle', 'wb') as handle:
+        pickle.dump(models, 
+                    handle, protocol=pickle.HIGHEST_PROTOCOL)
+            
+            
+    return scores, num_examples, models

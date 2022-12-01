@@ -48,7 +48,7 @@ class ALE():
         random.seed(self.args.rand_seed)
         np.random.seed(self.args.rand_seed)
 
-        data_folder = '../xlsa17/data/'+args.dataset+'/'
+        data_folder = 'data/'+args.dataset+'/'
         self.data_folder = data_folder
 
         attributes = []
@@ -70,10 +70,10 @@ class ALE():
         self.attributes = list(range(args.att))
 
 
-        res = f"../../adversarial_grid/{args.dataset}_synt_res101.p"
+        res = f"data/{args.dataset}_synt_res101.p"
         res101 = pickle.load(open(res, "rb"))#io.loadmat(self.data_folder+'res101.mat')
 
-        split_file= f"../../adversarial_grid/{args.dataset}_synt_att_splits.p"
+        split_file= f"data/{args.dataset}_synt_att_splits.p"
         att_splits = pickle.load(open(split_file, "rb"))
 
         train_loc = 'train_loc'
@@ -238,8 +238,6 @@ class ALE():
 
         print('Testing...\n')
 
-        
-        
         if args.method == 'trainval':
             test_acc, cm_save = self.zsl_acc(self.X_train, best_W, self.labels_train, self.train_sig)
 
@@ -250,10 +248,10 @@ class ALE():
             test_acc, cm_save = self.zsl_acc(self.X_test, best_W, self.labels_test, self.test_sig)
 
 
-        with open(f'confusion_matrix/synt_{args.dataset}_method_{args.method}_n_att_{args.att}_cm_seed_{self.args.rand_seed}.pickle', 'wb') as handle:
+        with open(f'results/{args.dataset}/ALE/confusion_matrix/synt_{args.dataset}_method_{args.method}_n_att_{args.att}_cm_seed_{self.args.rand_seed}.pickle', 'wb') as handle:
             pickle.dump(cm_save, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        with open(f'confusion_matrix/accuracy_synt_{args.dataset}_method_{args.method}.txt', 'a') as f:
+        with open(f'results/{args.dataset}/ALE/confusion_matrix/accuracy_synt_{args.dataset}_method_{args.method}.txt', 'a') as f:
             f.write(f'{args.dataset}\t{args.method}\t{args.att}\t{test_acc}\n')
 		
         print('Test Acc:{}'.format(test_acc))
