@@ -47,7 +47,7 @@ We compare our lower bound with the empirical error of SOTA algorithms for ZSL w
 - [DAZLE](https://github.com/hbdat/cvpr20_DAZLE)
 
 
-1. Greedly select most meaningful attributes and compute the bound
+#### 1. Greedly select most meaningful attributes and compute the bound
 
 For APY and AWA2 run:
 
@@ -87,7 +87,7 @@ for DATASET in SUN CUB
 done
 ```
 
-2. Run models
+#### 2. Run models
 
 In the remaining sections, we show how to run each model for the APY dataset. The reader can use the same commands to run the scripts on the other datasets. Refer to  [Appendix D.3](https://arxiv.org/pdf/2205.13068.pdf) to properly set the model parameters. 
 
@@ -99,6 +99,7 @@ First we train the attribute detectors on the seen classes.
 python train_attribute_detectors.py -data APY
 ```
 
+Then run DAP.
 
 ```
 python models/DAP/dap.py -data APY -method test -reduced no -num_subset all -num_att 15
