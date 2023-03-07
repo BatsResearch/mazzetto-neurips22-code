@@ -161,4 +161,18 @@ python generate_synth_data.py -dataset APY -method test -reduced no -num_subset 
 
 You can then run each model again specifying the correct paths.
 
+# Citation  
 
+If you make usage of our bound in your work, plese cite us :)
+
+```
+@inproceedings{
+  mazzetto2022tight,
+  title={Tight Lower Bounds on Worst-Case Guarantees for Zero-Shot Learning with Attributes},
+  author={Alessio Mazzetto and Cristina Menghini and Andrew Yuan and Eli Upfal and Stephen Bach},
+  booktitle={Advances in Neural Information Processing Systems},
+  editor={Alice H. Oh and Alekh Agarwal and Danielle Belgrave and Kyunghyun Cho},
+  year={2022},
+  url={https://openreview.net/forum?id=tzNWhvOomsK}
+}
+```
